@@ -1,21 +1,20 @@
 const { isValidToolCall, isValidFinal } = require("./llm/schema");
 
+const INJECTION_PATTERNS = [
+  /ignore previous instructions/i,
+  /reveal secrets/i,
+  /override policy/i,
+  /send confidential/i
+];
+
 /**
  * detectPromptInjection(text)
  *
  * Return array of detected issue codes (empty array if safe).
- * Tests expect prompt injection to be blocked for phrases like:
- * - ignore previous instructions
- * - reveal secrets
- * - override policy
- * - send confidential
- *
- * Suggested return codes:
- * - "PROMPT_INJECTION"
  */
 function detectPromptInjection(text) {
-  // TODO
-  return [];
+  const matched = INJECTION_PATTERNS.some((pattern) => pattern.test(text));
+  return matched ? ["PROMPT_INJECTION"] : [];
 }
 
 /**
@@ -24,8 +23,7 @@ function detectPromptInjection(text) {
  * Return true if allowed, false otherwise.
  */
 function enforceToolAllowlist(toolName, allowedTools) {
-  // TODO
-  return false;
+  return Array.isArray(allowedTools) && allowedTools.includes(toolName);
 }
 
 /**
@@ -37,7 +35,6 @@ function enforceToolAllowlist(toolName, allowedTools) {
  * - { ok: false, reason: string } otherwise
  */
 function validateLlmResponse(obj) {
-  // TODO
   if (isValidToolCall(obj)) return { ok: true, type: "tool_call" };
   if (isValidFinal(obj)) return { ok: true, type: "final" };
   return { ok: false, reason: "Invalid LLM response schema" };
